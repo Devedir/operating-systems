@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -std=c17 -g
-Executables = static_exe shared_exe
+CFLAGS = -Wall -std=c17 -g -O0
+Executables = static_exe shared_exe dynamic_exe
 
 .PHONY: all
 all: $(Executables)
@@ -21,6 +21,9 @@ libcollatz.so: collatz.c
 
 client.o: client.c
 	$(CC) $(CFLAGS) -c client.c
+
+dynamic_exe: client.c
+	$(CC) $(CFLAGS) client.c -o dynamic_exe -ldl -D DYNAMIC
 
 .PHONY: clean
 clean:
