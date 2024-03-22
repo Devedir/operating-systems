@@ -7,12 +7,35 @@
 #define MAX_PATH_LEN 256
 #define MAX_LINE_LEN 1024
 
+void reverse_string(char string[], size_t size) {
+    size_t left_ptr = 0;
+    size_t right_ptr = size - 1;
+    while (left_ptr < right_ptr) {
+        char temp = string[left_ptr];
+        string[left_ptr] = string[right_ptr];
+        string[right_ptr] = temp;
+        left_ptr++;
+        right_ptr--;
+    }
+}
+
 void flip(FILE* input, FILE* output) {
+    char buffer[MAX_LINE_LEN] = {0};
+    while (fgets(buffer, MAX_LINE_LEN, input)) {
+        size_t line_len = strcspn(buffer, "\r\n");
+        reverse_string(buffer, line_len);
+        size_t written = fwrite(buffer, sizeof(char), line_len, output);
+        if (written != line_len) {
+            fprintf(stderr, "An error occurred trying to write a flipped line.\n");
+        }
+        if (buffer[line_len] == '\n')
+            fwrite("\n", sizeof(char), 1, output);
+    }
 }
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Two arguments required: paths to the source and target directories.");
+        fprintf(stderr, "Two arguments required: paths to the source and target directories.\n");
         return 1;
     }
     const char* source_dir_path = argv[1];
@@ -66,7 +89,6 @@ int main(int argc, char* argv[]) {
             perror("Target file closing error");
             return errno;
         }
-        printf("Found: %s\n", entry->d_name);
     }
 
     caught_result = closedir(source_dir_handle);

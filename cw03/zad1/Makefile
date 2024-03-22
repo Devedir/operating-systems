@@ -6,8 +6,13 @@ Executables = flipper
 all: $(Executables)
 
 flipper: flipper.c
-	$(CC) flipper.c -o flipper
+	$(CC) $(CFLAGS) flipper.c -o flipper
+
+.PHONY: test
+test: all
+	./flipper ./art ./flipped
 
 .PHONY: clean
 clean:
+	rm -rf flipped*
 	rm -f *.o *.a *.so *.so.* $(Executables)
