@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+// I just trust in those, no additional checks are made :)
 #define MAX_PATH_LEN 256
 #define MAX_LINE_LEN 1024
 
@@ -55,8 +56,8 @@ int main(int argc, char* argv[]) {
         if (namelen < 4) continue;
         char* format = entry->d_name + namelen - 4;
         if (strncmp(format, ".txt", 4) != 0) continue;
-        char filepath[MAX_PATH_LEN];
-        sprintf(filepath, "%s/%s", source_dir_path, entry->d_name);
+        char filepath[MAX_PATH_LEN * 2 + 20];
+        snprintf(filepath, sizeof filepath, "%s/%s", source_dir_path, entry->d_name);
         FILE* to_reverse = fopen(filepath, "r");
         if (to_reverse == NULL) {
             perror("Source file opening error");
@@ -70,7 +71,7 @@ int main(int argc, char* argv[]) {
                 return errno;
             }
         }
-        sprintf(filepath, "%s/flipped_%s", target_dir_path, entry->d_name);
+        snprintf(filepath, sizeof filepath, "%s/flipped_%s", target_dir_path, entry->d_name);
         FILE* target_file = fopen(filepath, "w");
         if (target_file == NULL) {
             perror("Target file opening error");
