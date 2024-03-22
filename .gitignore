@@ -6,5 +6,8 @@
 !*.c
 !*.h
 !Makefile
+!*.txt
+!*.jpg
+
 !.gitignore
 !.md
