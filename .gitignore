@@ -9,5 +9,7 @@
 !*.txt
 !*.jpg
 
+!cleanzip.sh
+
 !.gitignore
 !.md
