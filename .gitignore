@@ -12,4 +12,4 @@
 !cleanzip.sh
 
 !.gitignore
-!.md
+!*.md
