@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 double fun(double x) {
     return 4 / (x*x + 1);
@@ -47,7 +48,11 @@ int main(void) {
             close(pipedes[0]);
             free(read_ends);
             double area = h * fun(x);
-            if (write(pipedes[1], &area, sizeof area) == -1) return 1;
+            if (write(pipedes[1], &area, sizeof area) == -1) {
+                fprintf(stderr, "Error writing to a pipe in child nr %d: %s", i, strerror(errno));
+                return 1;
+            }
+            close(pipedes[1]);
             return 0;
         }
         close(pipedes[1]);
@@ -56,6 +61,18 @@ int main(void) {
     }
 
     // Wait and read their results summing them up
+    double sum = 0;
+    for (int i = 0; wait(NULL) != -1; i++) {
+        double area;
+        if (read(read_ends[i], &area, sizeof area) == -1) {
+            fprintf(stderr, "Error reading from a pipe from child nr %d: %s", i, strerror(errno));
+            free(read_ends);
+            return 12;
+        }
+        sum += area;
+    }
+    for (int i = 0; i < n; i++)
+        close(read_ends[i]);
     free(read_ends);
 
     // Send back the result through a named pipe
