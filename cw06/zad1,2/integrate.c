@@ -5,7 +5,7 @@
 
 void parse_args(int argc, char* argv[], double* h, int* n) {
     if (argc != 3) {
-        fprintf(stderr, "Four arguments required: boundaries, rectangle width and number of them.\n");
+        fprintf(stderr, "Two arguments required: rectangle width and number of them.\n");
         exit(-1);
     }
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     parse_args(argc, argv, &h, &n);
 
     // Read the boundaries
-    double boundaries[2];
+    double boundaries[2] = {0};
     printf("Give the boundaries of integration: ");
     scanf("%lf %lf", &boundaries[0], &boundaries[1]);
 
@@ -39,16 +39,30 @@ int main(int argc, char* argv[]) {
         }
     }
     FILE* fifo = fopen("calc_data.fifo", "wb");
-    if (fwrite(&h, sizeof h, 1, fifo) != 1) return 11;
-    if (fwrite(&n, sizeof n, 1, fifo) != 1) return 12;
-    if (fwrite(boundaries, sizeof boundaries[0], 2, fifo) != 2) return 13;
-    fclose(fifo);
+    if (fifo == NULL) {
+        perror("Pipe opening error");
+        return 11;
+    }
+    if (fwrite(&h, sizeof h, 1, fifo) != 1) return 12;
+    if (fwrite(&n, sizeof n, 1, fifo) != 1) return 13;
+    if (fwrite(boundaries, sizeof boundaries[0], 2, fifo) != 2) return 14;
+    if (fclose(fifo) != 0) {
+        perror("Pipe closing error");
+        return 15;
+    }
 
     // Wait and read the results from another pipe
     double result;
     fifo = fopen("calc_data.fifo", "rb");
-    fread(&result, sizeof result, 1, fifo);
-    fclose(fifo);
+    if (fifo == NULL) {
+        perror("Pipe opening error");
+        return 20;
+    }
+    if (fread(&result, sizeof result, 1, fifo) != 1) return 21;
+    if (fclose(fifo) != 0) {
+        perror("Pipe closing error");
+        return 22;
+    }
 
     // Print those results
     printf("Result: %lf\n", result);
