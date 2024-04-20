@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
@@ -14,6 +15,12 @@ int main(void) {
     // Wait and read the calculation parameters from a named pipe
     double h; int n;
     double boundaries[2] = {0};
+    if (mkfifo("calc_data.fifo", S_IRWXU) != 0) {
+        if (errno != EEXIST) {
+            perror("Error creating a fifo");
+            return 10;
+        }
+    }
     FILE* fifo = fopen("calc_data.fifo", "rb");
     if (fifo == NULL) {
         perror("Pipe opening error");
@@ -76,6 +83,16 @@ int main(void) {
     free(read_ends);
 
     // Send back the result through a named pipe
+    fifo = fopen("calc_data.fifo", "wb");
+    if (fifo == NULL) {
+        perror("Pipe opening error");
+        return 20;
+    }
+    if (fwrite(&sum, sizeof sum, 1, fifo) != 1) return 21;
+    if (fclose(fifo) != 0) {
+        perror("Pipe closing error");
+        return 22;
+    }
 
     return 0;
 }
