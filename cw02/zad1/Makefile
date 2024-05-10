@@ -23,7 +23,7 @@ client.o: client.c
 	$(CC) $(CFLAGS) -c client.c
 
 dynamic_exe: client.c
-	$(CC) $(CFLAGS) client.c -o dynamic_exe -ldl -D DYNAMIC
+	$(CC) $(CFLAGS) client.c -o dynamic_exe -ldl -D DYNAMIC # definicja dla preprocesora
 
 .PHONY: clean
 clean:
