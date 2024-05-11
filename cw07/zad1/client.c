@@ -65,7 +65,7 @@ int main(void) {
                 if (strncmp("CLOSE", message, 5) == 0) {
                     break;
                 }
-                printf("%s\n", message);
+                printf("%s", message);
             }
 
             closing = mq_close(my_queue);
@@ -80,8 +80,7 @@ int main(void) {
 
             msg.id = id;
             while (strncmp("CLOSE", msg.text, 5) != 0) {
-                int reading = scanf("%s", msg.text);
-                if (reading == EOF) {
+                if (fgets(msg.text, TEXT_SIZE, stdin) == NULL) {
                     perror("Reading error");
                 }
                 sending = mq_send(server_queue, (char*) &msg, sizeof(msg_t), 1);

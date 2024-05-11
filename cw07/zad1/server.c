@@ -61,7 +61,7 @@ int main(void) {
         } else {
             for (size_t i = 0; i < registered_clients; i++) {
                 if (client_ids[i] == msg.id) continue;
-                sending = mq_send(client_ids[i], msg.text, 6, 1);
+                sending = mq_send(client_ids[i], msg.text, strlen(msg.text) + 1, 1);
                 if (sending == -1)
                     perror("Client queue sending error");
             }
