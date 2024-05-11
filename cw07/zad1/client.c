@@ -27,7 +27,12 @@ int main(void) {
     char message[MESSAGE_SIZE];
     strcat(message, "INIT");
     strcat(message, name);
-    int sending = mq_send(server_queue, message, QUEUE_NAME_LEN + 4, 2);
+    msg_t msg = {
+            .text = "",
+            .id = (mqd_t) -1
+    };
+    strncpy(msg.text, message, QUEUE_NAME_LEN + 4);
+    int sending = mq_send(server_queue, (char*) &msg, sizeof(msg_t), 2);
     if (sending == -1) {
         perror("Server queue sending error");
         return 3;
@@ -40,35 +45,60 @@ int main(void) {
         return 4;
     }
 
-    while (id != (mqd_t) -1) {
-        receiving = mq_receive(my_queue, message, MESSAGE_SIZE, NULL);
-        if (receiving == (ssize_t) -1) {
-            perror("Client queue receiving error");
-            continue;
+    int closing;
+
+    if (id != (mqd_t) -1) {
+        pid_t whoami = fork();
+        if (whoami == -1) {
+            perror("Error forking");
+        } else if (whoami == 0) {
+            closing = mq_close(server_queue);
+            if (closing == -1)
+                perror("Server queue closing error");
+
+            while (1) {
+                receiving = mq_receive(my_queue, message, MESSAGE_SIZE, NULL);
+                if (receiving == (ssize_t) -1) {
+                    perror("Client queue receiving error");
+                    continue;
+                }
+                if (strncmp("CLOSE", message, 5) == 0) {
+                    break;
+                }
+                printf("%s\n", message);
+            }
+
+            closing = mq_close(my_queue);
+            if (closing == -1) {
+                perror("Client queue closing error");
+                return 6;
+            }
+        } else {
+            closing = mq_close(my_queue);
+            if (closing == -1)
+                perror("Client queue closing error");
+
+            msg.id = id;
+            while (strncmp("CLOSE", msg.text, 5) != 0) {
+                int reading = scanf("%s", msg.text);
+                if (reading == EOF) {
+                    perror("Reading error");
+                }
+                sending = mq_send(server_queue, (char*) &msg, sizeof(msg_t), 1);
+                if (sending == -1)
+                    perror("Server queue sending error");
+            }
+
+            closing = mq_close(server_queue);
+            if (closing == -1)
+                perror("Server queue closing error");
+            int unlinking = mq_unlink(name);
+            if (unlinking == -1) {
+                perror("Client queue unlinking error");
+                return 7;
+            }
         }
-        if (strncmp("CLOSE", message, 5) == 0) {
-            break;
-        }
-        printf("%s\n", message);
     }
 
-    int returning = 0;
-
-    int closing = mq_close(server_queue);
-    if (closing == -1) {
-        perror("Server queue closing error");
-        returning = 5;
-    }
-    closing = mq_close(my_queue);
-    if (closing == -1) {
-        perror("Client queue closing error");
-        returning = 6;
-    }
-    int unlinking = mq_unlink(name);
-    if (unlinking == -1) {
-        perror("Client queue unlinking error");
-        returning = 7;
-    }
-
-    return returning;
+    return 0;
 }

@@ -17,21 +17,21 @@ int main(void) {
 
     mqd_t client_ids[MAX_NO_CLIENTS];
     size_t registered_clients = 0;
-    char message[MESSAGE_SIZE];
+    msg_t msg;
     int sending, closing;
 
     while (1) {
-        ssize_t receiving = mq_receive(server_queue, message, MESSAGE_SIZE, NULL);
+        ssize_t receiving = mq_receive(server_queue, (char*) &msg, sizeof(msg_t), NULL);
         if (receiving == (ssize_t) -1) {
             perror("Queue receiving error");
-            return 2;
-        }
-        if (strncmp("CLOSE", message, 5) == 0) {
             break;
         }
-        if (strncmp("INIT", message, 4) == 0) {
+        if (strncmp("CLOSE", msg.text, 5) == 0) {
+            break;
+        }
+        if (strncmp("INIT", msg.text, 4) == 0) {
             char client_queue_name[QUEUE_NAME_LEN];
-            strncpy(client_queue_name, message + 4, QUEUE_NAME_LEN);
+            strncpy(client_queue_name, msg.text + 4, QUEUE_NAME_LEN);
             mqd_t new_client_id = mq_open(client_queue_name, O_WRONLY);
             if (new_client_id == (mqd_t) -1) {
                 perror("Client queue opening on server error");
@@ -48,7 +48,6 @@ int main(void) {
                 closing = mq_close(new_client_id);
                 if (closing == -1)
                     perror("Client queue closing error");
-                break;  //TODO: delete this temporary closing gateway
             } else {
                 printf("New client: %s\n", client_queue_name);
                 client_ids[registered_clients] = new_client_id;
@@ -56,6 +55,13 @@ int main(void) {
 
                 sending = mq_send(new_client_id, (char*) &new_client_id,
                                   sizeof(mqd_t), 2);
+                if (sending == -1)
+                    perror("Client queue sending error");
+            }
+        } else {
+            for (size_t i = 0; i < registered_clients; i++) {
+                if (client_ids[i] == msg.id) continue;
+                sending = mq_send(client_ids[i], msg.text, 6, 1);
                 if (sending == -1)
                     perror("Client queue sending error");
             }
