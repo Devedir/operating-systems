@@ -1,11 +1,9 @@
-#include <mqueue.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
-#define QUEUE_NAME_LEN 18
-#define MESSAGE_SIZE 8192
+#include "msgdefs.h"
 
 int main(void) {
     char name[QUEUE_NAME_LEN];

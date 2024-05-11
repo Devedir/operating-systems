@@ -1,12 +1,11 @@
-#include <mqueue.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-#define MESSAGE_SIZE 8192
+#include "msgdefs.h"
+
 #define MAX_NO_CLIENTS 5
-#define QUEUE_NAME_LEN 18
 
 int main(void) {
     const char name[] = "/chat-server";

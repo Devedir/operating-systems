@@ -5,10 +5,10 @@ Executables = server client
 .PHONY: all
 all: $(Executables)
 
-server: server.c
+server: server.c msgdefs.h
 	$(CC) $(CFLAGS) server.c -o server -lrt
 
-client: client.c
+client: client.c msgdefs.h
 	$(CC) $(CFLAGS) client.c -o client -lrt
 
 # 'make test' doesn't make much sense here
