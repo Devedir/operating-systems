@@ -1,7 +1,11 @@
+#define _POSIX_SOURCE
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/types.h>
 
 #include "msgdefs.h"
 
@@ -73,6 +77,16 @@ int main(void) {
                 perror("Client queue closing error");
                 return 6;
             }
+            int unlinking = mq_unlink(name);
+            if (unlinking == -1) {
+                perror("Client queue unlinking error");
+                return 7;
+            }
+
+            if (kill(getppid(), SIGTERM) == -1) {
+                perror("Signal sending error");
+                return 10;
+            }
         } else {
             closing = mq_close(my_queue);
             if (closing == -1)
@@ -91,11 +105,6 @@ int main(void) {
             closing = mq_close(server_queue);
             if (closing == -1)
                 perror("Server queue closing error");
-            int unlinking = mq_unlink(name);
-            if (unlinking == -1) {
-                perror("Client queue unlinking error");
-                return 7;
-            }
         }
     }
 
