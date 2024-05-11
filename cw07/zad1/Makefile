@@ -6,10 +6,10 @@ Executables = server client
 all: $(Executables)
 
 server: server.c
-	$(CC) $(CFLAGS) server.c -o server
+	$(CC) $(CFLAGS) server.c -o server -lrt
 
 client: client.c
-	$(CC) $(CFLAGS) client.c -o client
+	$(CC) $(CFLAGS) client.c -o client -lrt
 
 # 'make test' doesn't make much sense here
 
