@@ -1,5 +1,5 @@
 #define TEXT_LEN 11 // including '\0'
-#define QUEUE_CAPACITY 5
+#define QUEUE_CAPACITY 2
 
 typedef struct queue_t {
     int size;

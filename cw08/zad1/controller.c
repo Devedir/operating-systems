@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "queue.h"
+
 void parse_input(int argc, char* argv[], int* no_users, int* no_printers) {
     if (argc != 3) {
         fprintf(stderr, "Two arguments required: number of users and printers.\n");
@@ -34,8 +36,22 @@ int main(int argc, char* argv[]) {
     int no_users, no_printers;
     parse_input(argc, argv, &no_users, &no_printers);
 
-    printf("Users: %d\n", no_users);
-    printf("Printers: %d\n", no_printers);
+    queue_t queue = q_init();
+    q_push(&queue, "some_word1");
+    q_push(&queue, "some_word2");
+    q_push(&queue, "some_word3");
+    char* str = q_pop(&queue);
+    if (str == NULL) {
+        fprintf(stderr, "Queue is empty!\n");
+    } else printf("%s\n", str);
+    str = q_pop(&queue);
+    if (str == NULL) {
+        fprintf(stderr, "Queue is empty!\n");
+    } else printf("%s\n", str);
+    str = q_pop(&queue);
+    if (str == NULL) {
+        fprintf(stderr, "Queue is empty!\n");
+    } else printf("%s\n", str);
 
     return 0;
 }
