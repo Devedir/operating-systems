@@ -5,8 +5,15 @@ Executables = controller
 .PHONY: all
 all: $(Executables)
 
-controller: controller.c
-	$(CC) $(CFLAGS) controller.c -o controller
+libqueue.a: queue.c
+	$(CC) $(CFLAGS) -c queue.c
+	ar rcs libqueue.a queue.o
+
+controller.o: controller.c
+	$(CC) $(CFLAGS) -c controller.c
+
+controller: controller.o libqueue.a
+	$(CC) controller.o -o controller -lrt -L. -lqueue
 
 .PHONY: test
 test: $(Executables)
