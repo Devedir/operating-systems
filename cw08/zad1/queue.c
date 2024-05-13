@@ -2,13 +2,19 @@
 
 #include <string.h>
 
-queue_t q_init() {
+queue_t q_create() {
     queue_t new_queue = {
             .size = 0,
             .before = QUEUE_CAPACITY - 1,
             .body = {{0}}
     };
     return new_queue;
+}
+
+void q_init(queue_t* queue) {
+    queue->size = 0;
+    queue->before = QUEUE_CAPACITY - 1;
+    memset(queue->body, 0, sizeof queue->body);
 }
 
 void q_push(queue_t* queue, char text[TEXT_LEN]) {

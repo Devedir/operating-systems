@@ -1,6 +1,12 @@
+#define _POSIX_C_SOURCE 200112L // for ftruncate() to work
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "queue.h"
 
@@ -36,22 +42,45 @@ int main(int argc, char* argv[]) {
     int no_users, no_printers;
     parse_input(argc, argv, &no_users, &no_printers);
 
-    queue_t queue = q_init();
-    q_push(&queue, "some_word1");
-    q_push(&queue, "some_word2");
-    q_push(&queue, "some_word3");
-    char* str = q_pop(&queue);
-    if (str == NULL) {
-        fprintf(stderr, "Queue is empty!\n");
-    } else printf("%s\n", str);
-    str = q_pop(&queue);
-    if (str == NULL) {
-        fprintf(stderr, "Queue is empty!\n");
-    } else printf("%s\n", str);
-    str = q_pop(&queue);
-    if (str == NULL) {
-        fprintf(stderr, "Queue is empty!\n");
-    } else printf("%s\n", str);
+    const char shm_name[] = "/printing_queue";
+    int shmd = shm_open(shm_name, O_RDWR | O_CREAT, S_IRWXU);
+    if (shmd == -1) {
+        perror("Shared memory creating error");
+        return 10;
+    }
+
+    int truncating = ftruncate(shmd, sizeof(queue_t));
+    if (truncating == -1) {
+        perror("Error truncating shared memory.");
+        shm_unlink(shm_name);
+        return 11;
+    }
+
+    queue_t* queue = mmap(NULL, sizeof(queue_t), PROT_READ | PROT_WRITE, MAP_SHARED, shmd, 0);
+    if (queue == MAP_FAILED) {
+        perror("Memory mapping failed");
+        shm_unlink(shm_name);
+        return 12;
+    }
+
+    q_init(queue);
+    q_push(queue, "1234567890");
+    q_push(queue, "0987654321");
+    printf("%s\n", q_pop(queue));
+    printf("%s\n", q_pop(queue));
+
+    int unmapping = munmap(queue, sizeof(queue_t));
+    if (unmapping == -1) {
+        perror("Memory unmapping failed");
+        shm_unlink(shm_name);
+        return 13;
+    }
+
+    int unlinking = shm_unlink(shm_name);
+    if (unlinking == -1) {
+        perror("Shared memory unlinking error");
+        return 14;
+    }
 
     return 0;
 }
