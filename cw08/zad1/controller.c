@@ -64,9 +64,7 @@ int main(int argc, char* argv[]) {
     }
 
     q_init(queue);
-    q_push(queue, "1234567890");
-    q_push(queue, "0987654321");
-    printf("%s\n", q_pop(queue));
+    getchar(); // to wait for user to push
     printf("%s\n", q_pop(queue));
 
     int unmapping = munmap(queue, sizeof(queue_t));

@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -std=c17 -g
-Executables = controller
+Executables = controller user
 
 .PHONY: all
 all: $(Executables)
@@ -14,6 +14,9 @@ controller.o: controller.c
 
 controller: controller.o libqueue.a
 	$(CC) controller.o -o controller -lrt -L. -lqueue
+
+user: user.c
+	$(CC) $(CFLAGS) user.c -o user -L. -lqueue
 
 .PHONY: test
 test: $(Executables)
