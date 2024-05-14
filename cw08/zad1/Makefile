@@ -13,10 +13,13 @@ controller.o: controller.c
 	$(CC) $(CFLAGS) -c controller.c
 
 controller: controller.o libqueue.a
-	$(CC) controller.o -o controller -lrt -L. -lqueue
+	$(CC) controller.o -o controller -lrt -L. -lqueue -pthread
 
-user: user.c
-	$(CC) $(CFLAGS) user.c -o user -L. -lqueue
+user: user.o libqueue.a
+	$(CC) user.o -o user -lrt -L. -lqueue -pthread
+
+user.o: user.c
+	$(CC) $(CFLAGS) -c user.c
 
 .PHONY: test
 test: $(Executables)

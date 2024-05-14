@@ -19,18 +19,18 @@ int main(void) {
     int truncating = ftruncate(shmd, sizeof(queue_t));
     if (truncating == -1) {
         perror("Error truncating shared memory.");
-        shm_unlink(shm_name);
         return 11;
     }
 
     queue_t* queue = mmap(NULL, sizeof(queue_t), PROT_READ | PROT_WRITE, MAP_SHARED, shmd, 0);
     if (queue == MAP_FAILED) {
         perror("Memory mapping failed");
-        shm_unlink(shm_name);
         return 12;
     }
 
-    q_push(queue, "1234567890");
+    sem_t* sem = q_open();
+    q_push(queue, "1234567890", sem);
+    q_sem_close(sem);
 
     int unmapping = munmap(queue, sizeof(queue_t));
     if (unmapping == -1) {
@@ -38,4 +38,6 @@ int main(void) {
         shm_unlink(shm_name);
         return 13;
     }
+
+    return 0;
 }

@@ -63,9 +63,19 @@ int main(int argc, char* argv[]) {
         return 12;
     }
 
-    q_init(queue);
+    sem_t* sem = q_init(queue);
     getchar(); // to wait for user to push
-    printf("%s\n", q_pop(queue));
+    char* str = q_pop(queue, sem);
+    if (str == NULL) {
+        fprintf(stderr, "Empty queue!\n");
+        q_sem_close(sem);
+        q_sem_unlink();
+        shm_unlink(shm_name);
+        return 30;
+    }
+    printf("%s\n", str);
+    q_sem_close(sem);
+    q_sem_unlink();
 
     int unmapping = munmap(queue, sizeof(queue_t));
     if (unmapping == -1) {
