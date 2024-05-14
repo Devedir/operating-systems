@@ -39,8 +39,8 @@ void parse_input(int argc, char* argv[], int* no_users, int* no_printers) {
 }
 
 int main(int argc, char* argv[]) {
-    int no_users, no_printers;
-    parse_input(argc, argv, &no_users, &no_printers);
+    //int no_users, no_printers;
+    //parse_input(argc, argv, &no_users, &no_printers);
 
     const char shm_name[] = "/printing_queue";
     int shmd = shm_open(shm_name, O_RDWR | O_CREAT, S_IRWXU);

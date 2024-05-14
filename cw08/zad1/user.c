@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
+#include <stdlib.h>
 
 #include "queue.h"
 
@@ -31,7 +33,17 @@ int main(void) {
     sem_t* main_sem = q_main_open();
     sem_t* user_sem = q_user_open();
     sem_t* printer_sem = q_printer_open();
-    q_push(queue, "1234567890", main_sem, user_sem, printer_sem);
+
+    srand(time(NULL));
+    while (1) {
+        char text[TEXT_LEN] = {0};
+        for (int i = 0; i < 10; i++) {
+            text[i] = 'a' + rand() % 26;
+        }
+        q_push(queue, text, main_sem, user_sem, printer_sem);
+        sleep(rand() % 60);
+    }
+
     q_sem_close(main_sem);
     q_sem_close(user_sem);
     q_sem_close(printer_sem);
