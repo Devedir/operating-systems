@@ -64,16 +64,7 @@ int main(int argc, char* argv[]) {
     }
 
     sem_t* sem = q_init(queue);
-    getchar(); // to wait for user to push
-    char* str = q_pop(queue, sem);
-    if (str == NULL) {
-        fprintf(stderr, "Empty queue!\n");
-        q_sem_close(sem);
-        q_sem_unlink();
-        shm_unlink(shm_name);
-        return 30;
-    }
-    printf("%s\n", str);
+    getchar(); // waiting to manually end
     q_sem_close(sem);
     q_sem_unlink();
 

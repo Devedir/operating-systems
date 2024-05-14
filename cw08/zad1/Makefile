@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -std=c17 -g
-Executables = controller user
+Executables = controller user printer
 
 .PHONY: all
 all: $(Executables)
@@ -20,6 +20,12 @@ user: user.o libqueue.a
 
 user.o: user.c
 	$(CC) $(CFLAGS) -c user.c
+
+printer: printer.o libqueue.a
+	$(CC) printer.o -o printer -lrt -L. -lqueue -pthread
+
+printer.o: printer.c
+	$(CC) $(CFLAGS) -c printer.c
 
 .PHONY: test
 test: $(Executables)
