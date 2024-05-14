@@ -29,7 +29,7 @@ printer.o: printer.c
 
 .PHONY: test
 test: $(Executables)
-	./controller 5 3
+	./controller
 
 .PHONY: clean
 clean:
