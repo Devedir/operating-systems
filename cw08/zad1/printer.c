@@ -29,8 +29,10 @@ int main(void) {
     }
 
     setbuf(stdout, NULL);
-    sem_t* sem = q_open();
-    char* str = q_pop(queue, sem);
+    sem_t* main_sem = q_main_open();
+    sem_t* user_sem = q_user_open();
+    sem_t* printer_sem = q_printer_open();
+    char* str = q_pop(queue, main_sem, user_sem, printer_sem);
     if (str == NULL) {
         fprintf(stderr, "Empty queue!\n");
     } else {
@@ -40,7 +42,7 @@ int main(void) {
         }
         printf("\n");
     }
-    q_sem_close(sem);
+    q_sem_close(main_sem);
 
     int unmapping = munmap(queue, sizeof(queue_t));
     if (unmapping == -1) {

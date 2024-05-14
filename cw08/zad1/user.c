@@ -28,9 +28,13 @@ int main(void) {
         return 12;
     }
 
-    sem_t* sem = q_open();
-    q_push(queue, "1234567890", sem);
-    q_sem_close(sem);
+    sem_t* main_sem = q_main_open();
+    sem_t* user_sem = q_user_open();
+    sem_t* printer_sem = q_printer_open();
+    q_push(queue, "1234567890", main_sem, user_sem, printer_sem);
+    q_sem_close(main_sem);
+    q_sem_close(user_sem);
+    q_sem_close(printer_sem);
 
     int unmapping = munmap(queue, sizeof(queue_t));
     if (unmapping == -1) {
