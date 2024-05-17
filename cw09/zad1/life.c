@@ -13,8 +13,8 @@
 #include <signal.h>
 
 void alarm_handler(int signo, siginfo_t* info, void* extra) {
-    grids_t* grids = info->si_value.sival_ptr;
-    update_grid(grids->background, grids->foreground);
+    updating_data_t* data = info->si_value.sival_ptr;
+    update_grid(data);
 }
 
 void* updater(void* grids_ptr) {
@@ -65,6 +65,17 @@ int main(int argc, char* argv[])
     }
     pthread_attr_destroy(&attr);
 
+    updating_data_t* updating_data = malloc(sizeof(updating_data_t) * n);
+    int default_size = GRID_SIZE / n;
+    int start_idx = 0;
+    for (int i = 0; i < n; i++) {
+        updating_data[i].grids = &grids;
+        updating_data[i].start_idx = start_idx;
+        updating_data[i].size = default_size;
+        start_idx += default_size;
+    }
+    updating_data[n - 1].size += GRID_SIZE - (default_size * n);
+
     struct sigaction action;
     sigset_t mask;
     sigfillset(&mask);
@@ -73,15 +84,15 @@ int main(int argc, char* argv[])
     action.sa_flags = SA_SIGINFO;
     action.sa_sigaction = alarm_handler;
     sigaction(SIGALRM, &action, NULL);
-    union sigval sig_grid = {
-            .sival_ptr = &grids
-    };
+    union sigval* sig_data = malloc(sizeof(union sigval) * n);
+    for (int i = 0; i < n; i++) {
+        sig_data[i].sival_ptr = &updating_data[i];
+    }
 
-	while (true)
-	{
+	while (true) {
 		draw_grid(grids.foreground);
         for (int i = 0; i < n; i++) {
-            pthread_sigqueue(thread_ids[i], SIGALRM, sig_grid);
+            pthread_sigqueue(thread_ids[i], SIGALRM, sig_data[i]);
         }
 		usleep(500 * 1000);
 
@@ -91,6 +102,7 @@ int main(int argc, char* argv[])
 	}
 
     free(thread_ids);
+    free(updating_data);
 
 	endwin(); // End curses mode
 	destroy_grid(grids.foreground);
