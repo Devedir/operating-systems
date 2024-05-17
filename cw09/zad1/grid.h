@@ -18,7 +18,7 @@ typedef struct updating_data_t {
 
 char* create_grid();
 void destroy_grid(char *grid);
-void draw_grid(char *grid);
+void draw_grid(const char *grid);
 void init_grid(char *grid);
 bool is_alive(int idx, const char *grid);
 void update_grid(updating_data_t* data);

@@ -11,9 +11,8 @@ void destroy_grid(char *grid) {
     free(grid);
 }
 
-void draw_grid(char *grid) {
-    for (int i = 0; i < GRID_HEIGHT; ++i)
-    {
+void draw_grid(const char *grid) {
+    for (int i = 0; i < GRID_HEIGHT; ++i) {
         // Two characters for more uniform spaces (vertical vs horizontal)
         for (int j = 0; j < GRID_WIDTH; ++j) {
             if (grid[i * GRID_WIDTH + j]) {
@@ -41,39 +40,28 @@ bool is_alive(int idx, const char *grid) {
     int count = 0;
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) {
+            if (i == 0 && j == 0)
                 continue;
-            }
             int r = row + i;
             int c = col + j;
-            if (r < 0 || r >= GRID_HEIGHT || c < 0 || c >= GRID_WIDTH) {
+            if (r < 0 || r >= GRID_HEIGHT || c < 0 || c >= GRID_WIDTH)
                 continue;
-            }
-            if (grid[GRID_WIDTH * r + c]) {
+            if (grid[GRID_WIDTH * r + c])
                 count++;
-            }
         }
     }
 
-    if (grid[idx]) {
-        if (count == 2 || count == 3)
-            return true;
-        else
-            return false;
-    }
-    else {
-        if (count == 3)
-            return true;
-        else
-            return false;
-    }
+    if (grid[idx])
+        return count == 2 || count == 3;
+    else
+        return count == 3;
 }
 
 void update_grid(updating_data_t* data) {
-    int idx = data->start_idx;
     grids_t* grids = data->grids;
+    int idx = data->start_idx;
     for (int i = 0; i < data->size; i++) {
-        grids->background[i] = (char) is_alive(idx, grids->foreground);
+        grids->background[idx] = (char) is_alive(idx, grids->foreground);
         idx++;
     }
 }

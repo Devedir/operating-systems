@@ -39,31 +39,12 @@ int main(int argc, char* argv[])
 	setlocale(LC_CTYPE, "");
 	initscr(); // Start curses mode
 
-	char *tmp;
     grids_t grids = {
             .foreground = create_grid(),
             .background = create_grid()
     };
 
 	init_grid(grids.foreground);
-
-    pthread_t* thread_ids = malloc(sizeof(pthread_t) * n);
-    pthread_attr_t attr;
-    for (int i = 0; i < n; i++) {
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-        int creating = pthread_create(&thread_ids[i], &attr, &updater, &grids);
-        if (creating != 0) {
-            endwin(); // End curses mode
-            perror("Error creating a thread");
-            pthread_attr_destroy(&attr);
-            destroy_grid(grids.foreground);
-            destroy_grid(grids.background);
-            free(thread_ids);
-            return 3;
-        }
-    }
-    pthread_attr_destroy(&attr);
 
     updating_data_t* updating_data = malloc(sizeof(updating_data_t) * n);
     int default_size = GRID_SIZE / n;
@@ -89,6 +70,26 @@ int main(int argc, char* argv[])
         sig_data[i].sival_ptr = &updating_data[i];
     }
 
+    pthread_t* thread_ids = malloc(sizeof(pthread_t) * n);
+    pthread_attr_t attr;
+    for (int i = 0; i < n; i++) {
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        int creating = pthread_create(&thread_ids[i], &attr, &updater, &grids);
+        if (creating != 0) {
+            endwin(); // End curses mode
+            perror("Error creating a thread");
+            pthread_attr_destroy(&attr);
+            destroy_grid(grids.foreground);
+            destroy_grid(grids.background);
+            free(thread_ids);
+            free(updating_data);
+            free(sig_data);
+            return 3;
+        }
+    }
+    pthread_attr_destroy(&attr);
+
 	while (true) {
 		draw_grid(grids.foreground);
         for (int i = 0; i < n; i++) {
@@ -96,13 +97,14 @@ int main(int argc, char* argv[])
         }
 		usleep(500 * 1000);
 
-		tmp = grids.foreground;
+		char* tmp = grids.foreground;
         grids.foreground = grids.background;
         grids.background = tmp;
 	}
 
     free(thread_ids);
     free(updating_data);
+    free(sig_data);
 
 	endwin(); // End curses mode
 	destroy_grid(grids.foreground);
