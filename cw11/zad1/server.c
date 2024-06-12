@@ -21,15 +21,22 @@ int main(void) {
                 "Error starting to listen on a server", 3);
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof client_addr;
-    try_n_die(accept(server_sock, (struct sockaddr*) &client_addr, &client_len), -1,
-                "Error starting to accept connections", 4);
+    const int client_sock = try_n_die(accept(server_sock, (struct sockaddr*) &client_addr, &client_len), -1,
+                                         "Error starting to accept connections", DONT_DIE);
 
     // TODO: recv and send
+    char buf[MAX_MESSAGE_LEN] = {0};
+    int n = try_n_die(read(client_sock, buf, MAX_MESSAGE_LEN), -1,
+                "Error reading from socket", DONT_DIE);
+    try_n_die(n, 0, "Error reading from a socket: the client end has already closed the socket", DONT_DIE);
+    printf("%s\n", buf);
 
     try_n_die(shutdown(server_sock, SHUT_RDWR), -1,
                 "Error shutting down the server socket", 7);
     try_n_die(close(server_sock), -1,
                 "Error closing server socket file descriptor", 8);
+    try_n_die(close(client_sock), -1,
+                "Error closing client socket file descriptor", 9);
 
     return 0;
 }

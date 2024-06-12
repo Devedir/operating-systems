@@ -35,8 +35,8 @@ int main(int argc, char* argv[]) {
     int server_ip, port;
     parse_args(argc, argv, &name, &server_ip, &port);
 
-    const int client_sock = try_n_die(socket(AF_INET, SOCK_STREAM, 0), -1,
-                                        "Error creating the client socket", 1);
+    const int server_sock = try_n_die(socket(AF_INET, SOCK_STREAM, 0), -1,
+                                      "Error creating the server socket", 1);
     const struct in_addr internet_addr = {
             .s_addr = server_ip
     };
@@ -45,14 +45,16 @@ int main(int argc, char* argv[]) {
             .sin_port = htons(port),
             .sin_addr = internet_addr
     };
-    try_n_die(connect(client_sock, (struct sockaddr*) &server_addr, sizeof server_addr), -1,
-                "Error connecting to the server", 2);
+    try_n_die(connect(server_sock, (struct sockaddr*) &server_addr, sizeof server_addr), -1,
+              "Error connecting to the server", 2);
 
     // TODO: recv and send
+    try_n_die(write(server_sock, "TEST", 5), -1,
+                        "Error writing on the sock", DONT_DIE);
 
-    try_n_die(shutdown(client_sock, SHUT_RDWR), -1,
+    try_n_die(shutdown(server_sock, SHUT_RDWR), -1,
               "Error shutting down the server socket", 7);
-    try_n_die(close(client_sock), -1,
+    try_n_die(close(server_sock), -1,
               "Error closing server socket file descriptor", 8);
 
     return 0;
