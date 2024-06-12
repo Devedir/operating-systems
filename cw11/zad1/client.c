@@ -49,8 +49,12 @@ int main(int argc, char* argv[]) {
               "Error connecting to the server", 2);
 
     // TODO: recv and send
-    try_n_die(write(server_sock, "TEST", 5), -1,
-                        "Error writing on the sock", DONT_DIE);
+    char buf[MAX_MESSAGE_LEN] = {0};
+    while (strncmp(buf, "STOP", 4) != 0) {
+        fgets(buf, MAX_MESSAGE_LEN, stdin);
+        try_n_die(write(server_sock, buf, MAX_MESSAGE_LEN), -1,
+                  "Error writing on the sock", DONT_DIE);
+    }
 
     try_n_die(shutdown(server_sock, SHUT_RDWR), -1,
               "Error shutting down the server socket", 7);

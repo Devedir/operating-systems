@@ -26,10 +26,18 @@ int main(void) {
 
     // TODO: recv and send
     char buf[MAX_MESSAGE_LEN] = {0};
-    int n = try_n_die(read(client_sock, buf, MAX_MESSAGE_LEN), -1,
-                "Error reading from socket", DONT_DIE);
-    try_n_die(n, 0, "Error reading from a socket: the client end has already closed the socket", DONT_DIE);
-    printf("%s\n", buf);
+    while (1) {
+        int n = try_n_die(read(client_sock, buf, MAX_MESSAGE_LEN), -1,
+                  "Error reading from socket", DONT_DIE);
+        printf("%s", buf);
+        if (strncmp(buf, "STOP", 4) == 0) {
+            break;
+        }
+        if (n == 0) {
+            fprintf(stderr, "Error reading from a socket: the client end has already closed the socket");
+            break;
+        }
+    }
 
     try_n_die(shutdown(server_sock, SHUT_RDWR), -1,
                 "Error shutting down the server socket", 7);

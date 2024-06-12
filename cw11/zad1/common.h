@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <string.h>
 
 #define DONT_DIE (-1)
 #define MAX_MESSAGE_LEN 256
