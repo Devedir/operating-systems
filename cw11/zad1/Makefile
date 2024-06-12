@@ -5,11 +5,15 @@ Executables = server client
 .PHONY: all
 all: $(Executables)
 
-server: server.c
-	$(CC) $(CFLAGS) server.c -o server -lrt
+libcommon.a: common.c
+	$(CC) $(CFLAGS) -c common.c
+	ar rcs libcommon.a common.o
 
-client: client.c
-	$(CC) $(CFLAGS) client.c -o client -lrt
+server: server.c libcommon.a
+	$(CC) $(CFLAGS) server.c -o server -lrt -L. -lcommon
+
+client: client.c libcommon.a
+	$(CC) $(CFLAGS) client.c -o client -lrt -L. -lcommon
 
 # 'make test' doesn't make much sense here
 
