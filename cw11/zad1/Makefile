@@ -10,7 +10,7 @@ libcommon.a: common.c
 	ar rcs libcommon.a common.o
 
 server: server.c libcommon.a
-	$(CC) $(CFLAGS) server.c -o server -lrt -L. -lcommon
+	$(CC) $(CFLAGS) server.c -o server -lrt -L. -lcommon -lpthread
 
 client: client.c libcommon.a
 	$(CC) $(CFLAGS) client.c -o client -lrt -L. -lcommon

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #define DONT_DIE (-1)
+#define MAX_NAME_LEN 32
 #define MAX_MESSAGE_LEN 256
 
 int try_n_die(int value, int avoid, const char* message, int code);

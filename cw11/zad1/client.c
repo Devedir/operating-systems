@@ -7,27 +7,31 @@ void parse_args(int argc, char* argv[], char** name, int* server_ip, int* port) 
         fprintf(stderr, "Wrong number of arguments - pass a client name, server IP and port\n");
         exit(1);
     }
+    if (strlen(argv[1]) >= MAX_NAME_LEN) {
+        fprintf(stderr, "This client name is too long!\n");
+        exit(2);
+    }
+    *name = argv[1];
     errno = 0;
     char* endptr;
     *server_ip = (int) strtol(argv[2], &endptr, 10);
     if (errno != 0) {
         perror("IP parsing error");
-        exit(2);
+        exit(3);
     }
     if (argv[3] == endptr) {
         fprintf(stderr, "IP parsing error: No digits found\n");
-        exit(2);
+        exit(3);
     }
     *port = (int) strtol(argv[3], &endptr, 10);
     if (errno != 0) {
         perror("Port number parsing error");
-        exit(3);
+        exit(4);
     }
     if (argv[3] == endptr) {
         fprintf(stderr, "Port number parsing error: No digits found\n");
-        exit(3);
+        exit(4);
     }
-    *name = argv[1];
 }
 
 int main(int argc, char* argv[]) {
@@ -47,8 +51,9 @@ int main(int argc, char* argv[]) {
     };
     try_n_die(connect(server_sock, (struct sockaddr*) &server_addr, sizeof server_addr), -1,
               "Error connecting to the server", 2);
+    try_n_die(write(server_sock, name, MAX_NAME_LEN), -1,
+              "Error writing on the sock", DONT_DIE);
 
-    // TODO: recv and send
     char buf[MAX_MESSAGE_LEN] = {0};
     while (strncmp(buf, "STOP", 4) != 0) {
         fgets(buf, MAX_MESSAGE_LEN, stdin);
