@@ -34,6 +34,25 @@ void parse_args(int argc, char* argv[], char** name, int* server_ip, int* port) 
     }
 }
 
+void* reading(void* arg) {
+    pthread_detach(pthread_self());
+    const int server_sock = *((int*) arg);
+    char buf[MAX_FULL_LEN] = {0};
+    while (true) {
+        ssize_t n = try_n_die(read(server_sock, buf, MAX_FULL_LEN), -1,
+                              "Error reading from socket", DONT_DIE);
+        if (n == 0) {
+            fprintf(stderr, "Server shut down\n");
+            return NULL;
+        }
+        else if (strncmp(buf, "PING", 4) == 0) {
+            try_n_die(write(server_sock, "ALIVE", 6), -1,
+                      "Error writing on the sock", DONT_DIE);
+        }
+        else printf("%s", buf);
+    }
+}
+
 int main(int argc, char* argv[]) {
     char* name;
     int server_ip, port;
@@ -53,6 +72,11 @@ int main(int argc, char* argv[]) {
               "Error connecting to the server", 2);
     try_n_die(write(server_sock, name, MAX_NAME_LEN), -1,
               "Error writing on the sock", DONT_DIE);
+
+    pthread_t reading_thread;
+    int* arg = malloc(sizeof server_sock);
+    *arg = server_sock;
+    pthread_create(&reading_thread, NULL, &reading, arg);
 
     char buf[MAX_MESSAGE_LEN] = {0};
     while (strncmp(buf, "STOP", 4) != 0) {

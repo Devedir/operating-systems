@@ -13,7 +13,7 @@ server: server.c libcommon.a
 	$(CC) $(CFLAGS) server.c -o server -lrt -L. -lcommon -lpthread
 
 client: client.c libcommon.a
-	$(CC) $(CFLAGS) client.c -o client -lrt -L. -lcommon
+	$(CC) $(CFLAGS) client.c -o client -lrt -L. -lcommon -lpthread
 
 # 'make test' doesn't make much sense here
 
